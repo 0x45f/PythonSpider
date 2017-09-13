@@ -304,6 +304,7 @@
 - encode是编码，它是将unicode格式编码（转换）成非unicode格式，使用时必须是unicode格式。
 
 ###关于re.match()、re.search()、re.findall()和re.finditer()的区别
+
 re.search()和re.match()函数
 
 - re.search()和re.match()函数如果匹配成功都是仅返回**一个**match对象
@@ -317,10 +318,12 @@ re.findall()函数
 - 当给出的正则表达式中不带括号时，列表的元素为字符串，此字符串为整个正则表达式匹配的内容。
 
 re.finditer()函数
+
 -从左到右扫描的，匹配按照发现的顺序返回。
 -扫描整个字符串并返回返回iterator产生match objects
 
 
 
 #划重点！！！！！！
+
 #第一次写python代码，贼菜，很多不好的地方请多多指教
