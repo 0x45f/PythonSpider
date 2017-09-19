@@ -15,9 +15,9 @@ python抓取淘女郎模特实战
     https://mm.taobao.com/tstar/search/tstar_model.do?_input_charset=utf-8&page=1
 
 这个请求用来淘女郎的信息，返回的是json数据，格式如下：
-![https://raw.githubusercontent.com/516310189/PythonSpider/master/TaoBaoMM/img/json_MM1.png]
-![https://raw.githubusercontent.com/516310189/PythonSpider/master/TaoBaoMM/img/json_MM2.png]
-![https://raw.githubusercontent.com/516310189/PythonSpider/master/TaoBaoMM/img/json_MM3.png]
+![](https://raw.githubusercontent.com/516310189/PythonSpider/master/TaoBaoMM/img/json_MM1.png)
+![](https://raw.githubusercontent.com/516310189/PythonSpider/master/TaoBaoMM/img/json_MM2.png)
+![](https://raw.githubusercontent.com/516310189/PythonSpider/master/TaoBaoMM/img/json_MM3.png)
 
 可以看到返回的json信息有一共有多个MM，分成多少页，当前是第几页，其中searchDOList对应的就是当前页中MM的信息
 包含了身高体重，主页，id等信息，这样就得到了MM的部分信息，然后我们再去主页看看选取了其中一个淘女郎的主页
@@ -53,8 +53,8 @@ value=9和相册页数一样，没跑了就是你了，到此我们用uer_id和p
     https://mm.taobao.com/album/json/get_album_photo_list.htm?user_id=176817195&album_id=10000794223&page=1
 
 可以也成功得到了json数据，来看一下json数据的具体格式：json_img1.png  json_img2.png
-![https://raw.githubusercontent.com/516310189/PythonSpider/master/TaoBaoMM/img/json_img1.png]
-![https://raw.githubusercontent.com/516310189/PythonSpider/master/TaoBaoMM/img/json_img2.png]
+![](https://raw.githubusercontent.com/516310189/PythonSpider/master/TaoBaoMM/img/json_img1.png)
+![](https://raw.githubusercontent.com/516310189/PythonSpider/master/TaoBaoMM/img/json_img2.png)
 包含了这个相册有多少张照片，分成多少页，以及每张照片的具体信息。picList就是这一页中照片的信息，里面有照片的具体地址。这样我们用user_id，album_id,page加上前面的地址就可以找到一个淘女郎的所有图片辣！
 
 ## 1.4.过程 ##
