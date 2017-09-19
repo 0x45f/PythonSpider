@@ -4,6 +4,7 @@ import urllib.error
 import urllib.parse
 import json
 import re
+import time
 
 
 class MMSpider:
@@ -54,7 +55,6 @@ class MMSpider:
 				self.write_txt(txt_path, person)
 				self.save_imgs(person, dir_path)
 
-
 	# 每个MM保存1000张照片 每个人照片实在太多了
 	def save_imgs(self, person, dir_path):
 		# 找到MM的相册一共有多少页
@@ -74,11 +74,13 @@ class MMSpider:
 							response = urllib.request.urlopen(url, timeout=5)
 							with open(dir_path + "\\" + str(img_index) + ".jpg", "wb") as file:
 								file.write(response.read())
-								# 好像写成了保存999张
-								img_index = img_index + 1
+								if img_index % 100 == 0:
+									print("sleep 1 second")
+									time.sleep(1)
 								if img_index >= 1000:
 									print(person["realName"] + ":已经保存1000张辣")
 									return
+								img_index = img_index + 1
 						except TimeoutError as e:
 							print(e.strerror)
 						except urllib.error.URLError as e:
@@ -160,12 +162,16 @@ class MMSpider:
 
 	def start(self):
 		print("开始辣！")
+		opener = urllib.request.build_opener()
+		opener.addheaders = [("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36")]
+		urllib.request.install_opener(opener)
 		for i in range(self.__total_page):
 			dict_result = self.get_person_dict(self.__currentPage)
 			searchDOList = dict_result["data"]["searchDOList"]
 			# 保存所有本页中MM的信息
 			self.save(searchDOList)
 			self.__currentPage += 1
+
 if __name__ == "__main__":
 	spider = MMSpider()
 	spider.start()
