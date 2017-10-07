@@ -3,7 +3,6 @@ from lxml import html
 
 
 class AiWenSpider:
-
 	def __init__(self):
 		# 要抓取多少页
 		self.__pages = 1
@@ -35,22 +34,65 @@ class AiWenSpider:
 			qusURLList.append(i.get('href'))
 		return qusURLList
 
-	# 得到问题的内容
-	def getQusContent(self, tree):
-		qusId = tree.xpath('//div[@id="paramDiv"]/@questionid')[0]
-		title = tree.xpath('//div[@class="question_text"]/pre')[0].text
-		goodAns = tree.xpath('//div[@class="good_answer"]//pre')[0].text
-		otherAns = tree.xpath('//div[@class="answer_list"]//pre')
-		ansList = []
-		for ans in otherAns:
-			ansList.append(ans.text)
-		return {
-			'qusId': qusId,  # 问题id
-			'title': title,  # 问题的标题
-			'goodAns': goodAns,  # 最佳答案
-			'ansList': ansList  # 其他答案的列表
+	# 保存问题
+	# 保存id，问题内容，提问者，提问时间，回答数量，问题链接
+	def saveQus(self, tree):
+		questionId = tree.xpath('//input[@id="questionId"]/@value')[0]
+		qcontent = tree.xpath('//div[@id="paramDiv"]/@qcontent')[0]
+		qusAuthor = tree.xpath('//div[@class="ask_autho cf"]/span[@class="user_wrap"]/a')[0].text
+		postDate = tree.xpath('//input[@id="postDate"]/@value')[0]
+		ansCount = int(tree.xpath('//div[@id="paramDiv"]/@lengood')[0]) \
+				 + int(tree.xpath('//div[@id="paramDiv"]/@lenother')[0])
+		url = tree.xpath('//link[@rel="canonical"]/@href')[0]
+		myDict = {
+			'questionId': questionId,
+			'qcontent': qcontent,
+			'qusAuthor': qusAuthor,
+			'postDate': postDate,
+			'ansCount': ansCount,
+			'url': url
 		}
+		# 将字典插入数据库
 
+	# 保存好评回答
+	# 保存id，回答内容，问题id，回答者，回答时间，是否是最佳答案:1好评答案，0其他答案
+	def saveGoodAns(self, tree):
+		# html代码中这个qId属性应该是回答的唯一标识
+		qId = tree.xpath('//div[@class="good_answer"]//span[@class="praise mr15"]/@qid')[0]
+		ansContent = tree.xpath('//div[@class="good_answer"]/div[@class="answer_text"]//pre')[0].text
+		questionId = tree.xpath('//input[@id="questionId"]/@value')[0]
+		ansAuthor = tree.xpath('//div[@class="good_answer"]//a[@class="blue408"]')[0].text
+		postDate = tree.xpath('//div[@class="good_answer"]//span[@class="time mr10"]')[0].text
+		isGood = 1
+		myDict = {
+			'qId': qId,
+			'ansContent': ansContent,
+			'questionId': questionId,
+			'ansAuthor': ansAuthor,
+			'postDate': postDate,
+			'isGood': isGood
+		}
+		# 存入数据库
+
+	# 保存其他回答
+	# 保存id，回答内容，问题id，回答者，回答时间，是否是最佳答案
+	def saveOtherAns(self, tree):
+
+		for
+			qId = tree.xpath('//div[@class="good_answer"]//span[@class="praise mr15"]/@qid')[0]
+			ansContent = tree.xpath('//div[@class="good_answer"]/div[@class="answer_text"]//pre')[0].text
+			questionId = tree.xpath('//input[@id="questionId"]/@value')[0]
+			ansAuthor = tree.xpath('//div[@class="good_answer"]//a[@class="blue408"]')[0].text
+			postDate = tree.xpath('//div[@class="good_answer"]//span[@class="time mr10"]')[0].text
+			isGood = 1
+			myDict = {
+				'qId': qId,
+				'ansContent': ansContent,
+				'questionId': questionId,
+				'ansAuthor': ansAuthor,
+				'postDate': postDate,
+				'isGood': isGood
+			}
 
 	def start(self):
 		for self.__currentPage in range(self.__pages):
@@ -61,7 +103,8 @@ class AiWenSpider:
 			qusURLList = self.getQusFootURL(tree)
 			for qusURL in qusURLList:
 				qusTree = self.getTree(qusURL)
-				content = self.getQusContent(qusTree)
+				myDict = self.saveGoodAns(qusTree)
+				print(myDict)
 
 if __name__ == '__main__':
 	spider = AiWenSpider()
