@@ -4,6 +4,7 @@ import DB
 import time
 import re
 
+
 class AiWenSpider:
 
 	def __init__(self):
@@ -119,7 +120,7 @@ class AiWenSpider:
 	def replace(self, content):
 		# TypeError: expected string or bytes-like object
 		# str()保证content是str
-		content = re.sub('\"', '', str(content))
+		content = re.sub('"', '', str(content))
 		return content
 
 	def start(self):
@@ -132,6 +133,7 @@ class AiWenSpider:
 			qusURLList = self.getQusFootURL(tree)
 			for qusURL in qusURLList:
 				qusTree = self.getTree(qusURL)
+				# 特意找了已解决问题但是还是会有没有最佳答案的问题。
 				lengood = self.saveQus(qusTree)
 				if lengood != 0:
 					self.saveGoodAns(qusTree)

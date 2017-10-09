@@ -87,12 +87,36 @@ lxml中Element的属性以及方法：
 
 # 2.遇到的问题 #
 
+## 2.1 ##
 
+网上很多介绍lxml的文章都是用的lxml的etree模块，但是我用的是python3.5安装lxml后不支持etree。在网上查了一会也没弄好，还是不能用etree，所以就用了lxml的html模块来完成这次任务。
 
-1366 Incorrect string value: '\xF0\x9F\x8E\xA7' for column 'qcontent' at row 1
-普通的字符串或者表情都是占位3个字节，所以utf8足够用了，但是移动端的表情符号占位是4个字节，普通的utf8就不够用了，为了应对无线互联网的机遇和挑战、避免 emoji 表情符号带来的问题、涉及无线相关的 MySQL 数据库建议都提前采用 utf8mb4 字符集，这必须要作为移动互联网行业的一个技术选型的要点
+## 2.2 ##
 
+在保存回答的过程会有时出现这个错误：
 
-1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '好评"，谢谢！"," | 14-01-24")' at line 1
+    1366 Incorrect string value: '\xF0\x9F\x8E\xA7' for column 'qcontent' at row 1
 
-如果我的答案对你有用,麻烦点击"好评"，谢谢！
+百度后发现\xF0\x9F\x8E\xA7表示的是emoji表情，普通的字符串或者表情都是占位3个字节，所以utf8足够用了，但是表情符号占位是4个字节，普通的utf8就不够用了，网上的建议是涉及无线相关的 MySQL 数据库建议都提前采用 utf8mb4 字符集。
+
+所以需要将数据库表中保存回答内容字段的字符集改成utf8mb4，并将该表的字符集也修改成utf8mb4。还需要将
+
+    self.__db = pymysql.connect(host='localhost', user='root', password='123', database='test', charset='utf8mb4')
+
+中的charset属性设置为utf8mb4，这样就可以在数据库中保存表情符号了。
+
+## 2.3 ##
+
+保存回答的过程中还有这个错误
+    
+    1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '好评"，谢谢！"," | 14-01-24")' at line 1
+
+查看问题的回答后发现有的回答中有这样的文字：如果我的答案对你有用,麻烦点击"好评"，谢谢！
+
+是因为文字中的""在执行sql语句时文字中的""导致sql语句被错误的分割所以会导致插入错误。可以利用python中的re模块将内容中的双引号去掉，这样插入就不会出错了。
+
+# 3.后记 #
+
+由于时间仓促所以仅仅是完成了大体功能，大家可以看看自己进行修改。
+
+前段时间学校事情比较多，国庆节有偷懒了几天，所以没有更新。溜了溜了
