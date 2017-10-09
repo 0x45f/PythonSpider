@@ -60,6 +60,7 @@ requests库的用法可以参考原博主的文章：http://cuiqingcai.com/2556.
 xpath可以去w3school上去学，下面贴两张图来介绍一下xpath的简单语法：
 
 ![](https://raw.githubusercontent.com/516310189/PythonSpider/master//AiWenSpider/imgs/XPath1.png)
+
 ![](https://raw.githubusercontent.com/516310189/PythonSpider/master//AiWenSpider/imgs/XPath2.png)
 
 lxml用法可以去看原博主的另一文章：http://cuiqingcai.com/2621.html学习lxml的用法，也可以参考lxml的官方文档：http://lxml.de/index.html
@@ -93,6 +94,8 @@ lxml中Element的属性以及方法：
     　　remove(subelement)：删除子元素。
       
 还有就是用到了lxml文档中提到的ElementPath语法，和xpath语法相似，可以去lxml官方文档中去查看。下面贴张图介绍一下基本的语法：
+
+
 ![](https://raw.githubusercontent.com/516310189/PythonSpider/master//AiWenSpider/imgs/ElementPath.png)
 
 # 2.遇到的问题 #
