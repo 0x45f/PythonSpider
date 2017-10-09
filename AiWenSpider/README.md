@@ -45,7 +45,13 @@ Python爬虫抓取爱问知识人问题并保存至数据库
                     <span>2回答</span>|<span>2017-09-21</span>
                 </div>
             </div>
-        </li>/b/v4zBdJ439.html部分就是具体问题的url点进去发现完整的地址是`http://iask.sina.com.cn/b/v4zBdJ439.html`，这样就可以在每一个类似上面html代码的部分找到该页面中所有问题的具体地址。点进去具体的地址后审查具体的html代码可以找到具体的问题内容，提问者，时间等内容，以及该问题的好评回答和其他回答。这样我们就可以开始具体的信息抓取了。## 1.3其他 ##
+        </li>
+
+/b/v4zBdJ439.html部分就是具体问题的url点进去发现完整的地址是`http://iask.sina.com.cn/b/v4zBdJ439.html`，这样就可以在每一个类似上面html代码的部分找到该页面中所有问题的具体地址。
+
+点进去具体的地址后审查具体的html代码可以找到具体的问题内容，提问者，时间等内容，以及该问题的好评回答和其他回答。这样我们就可以开始具体的信息抓取了。
+
+## 1.3其他 ##
 
 原博主用的是urllib，Beautiful Soup和MySQLdb来抓取和存储数据。而我选择了requests，xpath语法，lxml库以及pymysql来完成这次的任务。
 
@@ -53,7 +59,8 @@ requests库的用法可以参考原博主的文章：http://cuiqingcai.com/2556.
 
 xpath可以去w3school上去学，下面贴两张图来介绍一下xpath的简单语法：
 
-
+![](https://raw.githubusercontent.com/516310189/PythonSpider/master//AiWenSpider/imgs/XPath1.png)
+![](https://raw.githubusercontent.com/516310189/PythonSpider/master//AiWenSpider/imgs/XPath2.png)
 
 lxml用法可以去看原博主的另一文章：http://cuiqingcai.com/2621.html学习lxml的用法，也可以参考lxml的官方文档：http://lxml.de/index.html
 
@@ -84,6 +91,9 @@ lxml中Element的属性以及方法：
     　　iterfind(match)：根据tag或path查找所有的后代。
     　　itertext()：遍历所有后代并返回text值。
     　　remove(subelement)：删除子元素。
+      
+还有就是用到了lxml文档中提到的ElementPath语法，和xpath语法相似，可以去lxml官方文档中去查看。下面贴张图介绍一下基本的语法：
+![](https://raw.githubusercontent.com/516310189/PythonSpider/master//AiWenSpider/imgs/ElementPath.png)
 
 # 2.遇到的问题 #
 
