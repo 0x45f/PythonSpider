@@ -61,7 +61,7 @@ xpath可以去w3school上去学，下面贴两张图来介绍一下xpath的简�
 
 ![](https://raw.githubusercontent.com/516310189/PythonSpider/master//AiWenSpider/imgs/XPath1.png)
 
-![](https://raw.githubusercontent.com/516310189/PythonSpider/master//AiWenSpider/imgs/XPath2.png)
+![](https://raw.githubusercontent.com/516310189/PythonSpider/master//AiWenSpider/imgs/xpath2.png)
 
 lxml用法可以去看原博主的另一文章：http://cuiqingcai.com/2621.html学习lxml的用法，也可以参考lxml的官方文档：http://lxml.de/index.html
 
