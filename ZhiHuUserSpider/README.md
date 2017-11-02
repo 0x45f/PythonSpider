@@ -50,8 +50,27 @@ LWPCookieJar(filename)创建与libwww-perl Set-Cookie3文件兼容的FileCookieJ
 
 对于and操作符：只要左边的表达式为真，整个表达式返回的值是右边表达式的值，否则，返回左边表达式的值对于or操作符：只要两边的表达式为真，整个表达式的结果是左边表达式的值。如果是一真一假，返回真值表达式的值如果两个都是假，比如空值和0，返回的是右边的值。（空值或0）
 
-
 dump和dumps是将python对象转换成json格式；load和loads是将json格式转换成python对象
+
+
+
+redis操作
+
+在redis中维护两个集合：一个hash，一个list。  当从网页中抓取到一个url_token时，检查在hash中时候存在，如果不存在就将它放入list的尾部，作为还没有抓取的用户。当需要抓取用户信息的时候从list 的头部弹出一个url_token，进行抓取。当抓取完成后，将该url_token存取hash
+
+redis数据库中的原始命令
+
+HSET key field value  将哈希表 key 中的字段 field 的值设为 value 。
+
+HEXISTS key field  查看哈希表 key 中，指定的字段是否存在。
+
+BLPOP key1 [key2 ] timeout  移出并获取列表的第一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止。
+
+RPUSH key value1 [value]在列表中添加一个或多个值
+
+
+
+
 
 
 
