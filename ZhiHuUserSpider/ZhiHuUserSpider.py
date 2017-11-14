@@ -1,41 +1,55 @@
-import requests
-from lxml import html
 import json
-from RedisHandler import RedisHandler
-from MongoHandler import MongoHandler
+import random
 import time
-
+import requests
+from db.RedisHandler import RedisHandler
+from lxml import html
+from http import cookiejar
 
 # 只抓取了type为people的用户
+from Tools import Tools
+from db.MongoHandler import MongoHandler
+
+
 class ZhiHuUserSpider:
 
 	def __init__(self):
-		self.__headers = {
+		headers = {
 			'accept': 'application / json, text / plain, * / *',
-			'Accept - Encoding': 'gzip, deflate, br',
-			'Accept - Language': 'zh - CN, zh;q = 0.8',
+			'Accept-Encoding': 'gzip, deflate, br',
+			'Accept-Language': 'zh - CN, zh;q = 0.8',
 			'authorization': 'oauth c3cef7c66a1843f8b3a9e6a1e3160e20',
 			'Host': 'www.zhihu.com',
 			'Referer': 'https://www.zhihu.com/',
-			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-						  'Chrome/61.0.3163.100 Safari/537.36 ',
-			'X - UDID': 'AFDC3cbZvguPTk1xbYYtpQt214bsP2px88I ='
+			'X-UDID': 'AFDC3cbZvguPTk1xbYYtpQt214bsP2px88I='
 		}
+		self.__tools = Tools()
 		self.__session = requests.session()
 		self.__redis_handler = RedisHandler()
 		self.__mongo_handler = MongoHandler()
 		# self.__mysql_handler = MySqlHandler()
 		# 字典的update方法进行并集更新
-		self.__session.headers.update(self.__headers)
-		self.__session.proxies.update({'HTTP': 'HTTP://49.81.254.120:8118'})
+		self.__session.headers.update(headers)
+		self.__session.cookies = cookiejar.LWPCookieJar(filename='./login/cookies')
+		self.__session.cookies.load()
+		self.update_ua()
+		# self.update_proxy()
+
+	def update_ua(self):
+		self.__session.headers.update({'User-Agent': self.__tools.get_ua()})
+
+	def update_proxy(self):
+		self.__session.proxies.update({'HTTPS': self.__tools.get_proxy()})
 
 	def get_tree(self, url):
 		text = self.__session.get(url).text
 		# print(html.fromstring(text).__class__)
+		# print(self.__session.cookies.values())
 		return html.fromstring(text)
 
 	# 获取首页上出现的用户的主页地址并存入redis
 	def get_url_token_from_index(self):
+		print('开始抓取 https://www.zhihu.com/explore 的用户！')
 		tree = self.get_tree('https://www.zhihu.com/explore')
 		users_url = tree.xpath('//a[@class="author-link"]/@href')
 		# 只抓取个人账户
@@ -45,22 +59,33 @@ class ZhiHuUserSpider:
 
 		# 将类型为people的url存入redis
 		for u in [i[8:] for i in users_url if 'people' in i]:
-			print(u)
+			# print(u)
 			self.__redis_handler.save_url_token(u)
+		print('抓取 https://www.zhihu.com/explore 的用户完毕')
 
 	'''
 	通过用户的url_token获取该用户关注的人或者关注该用户的人
 	根据is_followers的值来确定获取哪一类
 	默认获取用户关注的人的url_token并存入redis
 	'''
-	def get_follow_url_token(self, url_token, is_following=True):
+	def get_follow_url_token(self, url_token, is_following=True):	
 		follow = 'followees' if is_following else 'followers'
+		print(url_token + ' ' + follow + '开始抓取...')
 		is_end = False
 		next_url = 'https://www.zhihu.com/api/v4/members/'+url_token+'/'+follow+'?' \
 			  'include=data%5B*%5D.answer_count%2Carticles_count%2Cgender' \
 			  '%2Cfollower_count%2Cis_followed%2Cis_following%2Cbadge%5B%3F' \
 			  '(type%3Dbest_answerer)%5D.topics&offset=0&limit=20'
+
+		ref_follow = 'following' if is_following else 'followers'
+		referer = 'https://www.zhihu.com/people/' + url_token + '/' + ref_follow
+		self.__session.headers.update({'Referer': referer})
+
+		# 最多抓取100个该用户关注的人或关注该用户的人
+		count = 0
 		while not is_end:
+			if count >= 100:
+				break
 			# dump和dumps是将python对象转换成json格式；load和loads是将json格式转换成python对象
 			text = self.__session.get(next_url).text
 			res = json.loads(text)
@@ -72,8 +97,13 @@ class ZhiHuUserSpider:
 			# print(type(is_end))
 			# print(next_url)
 			for u in [user['url_token'] for user in res['data'] if user['type'] == 'people']:
-				print(u)
+				# print(u)
 				self.__redis_handler.save_url_token(u)
+			count = count + 20
+			# self.update_proxy()
+			self.update_ua()
+			time.sleep(random.randint(1, 3))
+		print(url_token + ' ' + follow + '抓取完毕')
 
 	'''
 	传入一个用户的url_token,将该用户的信息存入mysql
@@ -98,10 +128,31 @@ class ZhiHuUserSpider:
 		      'badge%5B%3F(type%3Dbest_answerer)%5D.topics'
 		text = self.__session.get(url).text
 		res = json.loads(text)
-		print(text)
-		# self.__mongo_handler.save_info(**res)
+		# print(text)
+		self.__mongo_handler.save_info(**res)
+		print(url_token + '用户已经信息保存进mongo')
 
+	def entry(self):
+		print('爬虫开始！')
+		# 刚开始redis中没有数据，抓取主页上的用户
+		if self.__redis_handler.get_list_len() == 0:
+			self.get_url_token_from_index()
+
+		# 从redis的list中弹出一个url，找到该用户关注的人和关注该用户的人，并保存用户数据进mongo
+		while True:
+			url_token = self.__redis_handler.get_url_token()
+			# 保存该用户的信息
+			self.save_info_to_mongo(url_token)
+			# 该用户关注的人
+			self.get_follow_url_token(url_token, True)
+			# 关注该用户的人
+			self.get_follow_url_token(url_token, False)
+			# self.update_proxy()
+			# self.update_ua()
+			# print('睡一下~')
+			# time.sleep(random.randint(1, 3))
 
 if __name__ == '__main__':
 	spider = ZhiHuUserSpider()
-	spider.save_info_to_mongo('WanPlusSW')
+	spider.entry()
+	# spider.get_tree('https://www.zhihu.com/explore')

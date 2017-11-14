@@ -10,15 +10,11 @@ redis中维护两个集合，一个list一个hash。list中作为待抓取的用
 
 当找到新的用户url的时候，先在hash中查询是否存在该url，如果不存在，就将该url加入到list和hash中。要爬取用户数据的时候，从list弹出数据，进行爬取
 
+防止爬虫被屏蔽
 
+代理IP、ua、cookies、减速减速再减速
 
-Bloom Filter算法
-
-
-
-
-
-
+Bloom Filter算法(布隆过滤器)
 
 ```
                         CookieJar____
@@ -56,19 +52,34 @@ LWPCookieJar(filename)创建与libwww-perl Set-Cookie3文件兼容的FileCookieJ
 
 dump和dumps是将python对象转换成json格式；load和loads是将json格式转换成python对象
 
-
-
 redis操作
 
-在redis中维护两个集合：一个hash，一个list。  当从网页中抓取到一个url_token时，检查在hash中时候存在，如果不存在就将它放入list的尾部，作为还没有抓取的用户。当需要抓取用户信息的时候从list 的头部弹出一个url_token，进行抓取。当抓取完成后，将该url_token存取hash
+在redis中维护两个集合：一个hash，一个list。 当从网页中抓取到一个url_token时，检查在hash中时候存在，如果不存在就将它放入list的尾部，作为还没有抓取的用户。当需要抓取用户信息的时候从list 的头部弹出一个url_token，进行抓取。当抓取完成后，将该url_token存取hash
 
 redis数据库中的原始命令
 
-HSET key field value  将哈希表 key 中的字段 field 的值设为 value 。
+HSET key field value 将哈希表 key 中的字段 field 的值设为 value 。
 
-HEXISTS key field  查看哈希表 key 中，指定的字段是否存在。
+HEXISTS key field 查看哈希表 key 中，指定的字段是否存在。
 
-BLPOP key1 [key2 ] timeout  移出并获取列表的第一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止。
+BLPOP key1 [key2 ] timeout 移出并获取列表的第一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止。
 
 RPUSH key value1 [value]在列表中添加一个或多个值
 
+
+
+python random
+
+random.random():生成一个[0, 1)之间的随机浮点数
+
+random.uniformrandom.uniform(a, b):生成[a,b)之间的浮点数
+
+random.randint(a, b):生成[a,b]之间的整数
+
+random.randrange(a, b, step):在指定的集合[a,b)中,以step为基数随机取一个数.如random.randrange(0, 20, 2),相当于从[0,2,4,6,...,18]中随机取一个
+
+python 多线程
+
+join（）的作用是，在子线程完成运行之前，这个子线程的父线程将一直被阻塞。
+
+setDaemon() 默认情况下，主线程在退出时会等待所有子线程的结束。如果希望主线程不等待子线程，而是在退出时自动结束所有的子线程，就需要设置子线程为后台线程(daemon)。方法是通过调用线程类的setDaemon()方法。
