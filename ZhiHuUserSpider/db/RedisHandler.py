@@ -45,6 +45,10 @@ class RedisHandler:
     def get_list_len(self):
         return self.__redis_con.llen(self.__list_name)
 
+    # 从hash删除一条记录
+    def delete_from_hash(self, url_token):
+        self.__redis_con.hdel(self.__hash_name, url_token)
+
 if __name__ == '__main__':
     handler = RedisHandler()
 # handler.save_url_token('martin-john-74')

@@ -6,12 +6,11 @@ from db.RedisHandler import RedisHandler
 from lxml import html
 from http import cookiejar
 import threading
-
-# 只抓取了type为people的用户
 from Tools import Tools
 from db.MongoHandler import MongoHandler
 
 
+# 只抓取了type为people的用户
 class ZhiHuUserSpider(threading.Thread):
 
     headers = {
@@ -27,8 +26,8 @@ class ZhiHuUserSpider(threading.Thread):
     mongo_handler = MongoHandler()
 
     def __init__(self, thread_id):
-        super().__init__(self)
-        self.__id = thread_id
+        super(ZhiHuUserSpider, self).__init__()
+        self.__id = str(thread_id)
         self.__lock = threading.Lock()
         self.__session = requests.session()
         # self.__mysql_handler = MySqlHandler()
@@ -88,31 +87,32 @@ class ZhiHuUserSpider(threading.Thread):
 
         # 最多抓取100个该用户关注的人或关注该用户的人
         count = 0
-        while not is_end:
-            if count >= 100:
-                break
-            # dump和dumps是将python对象转换成json格式；load和loads是将json格式转换成python对象
+        while (not is_end) and (count <= 100):
             try:
                 text = self.__session.get(next_url).text
-            except requests.ConnectionError:
+                # dump和dumps是将python对象转换成json格式；load和loads是将json格式转换成python对象
+                res = json.loads(text)
+                # 是否获取了所有的用户, 是bool类型
+                is_end = res['paging']['is_end']
+                # 下一组20个用户的url
+                next_url = res['paging']['next']
+                # 存入redis
+                for u in [user['url_token'] for user in res['data'] if user['type'] == 'people']:
+                    self.redis_handler.save_url_token(u)
+            except requests.exceptions.ConnectionError as e:
+                print('#' + self.__id)
+                print(e.args)
                 self.update_proxy()
                 self.update_ua()
+                # 不太好应该设定一个尝试的最大次数
                 continue
-            res = json.loads(text)
-            # 是否获取了所有的用户, 是bool类型
-            is_end = res['paging']['is_end']
-            # 下一组20个用户的url
-            next_url = res['paging']['next']
-            # 存入redis
-            # print(type(is_end))
-            # print(next_url)
-            for u in [user['url_token'] for user in res['data'] if user['type'] == 'people']:
-                # print(u)
-                self.redis_handler.save_url_token(u)
+            except KeyError as e:
+                print('#' + self.__id)
+                print(e.args)
+                return
             count = count + 20
-            # self.update_proxy()
             self.update_ua()
-            time.sleep(random.randint(3, 5))
+            time.sleep(random.randint(2, 4))
         print('#' + self.__id + url_token + ' ' + follow + '抓取完毕')
 
     '''
@@ -120,24 +120,37 @@ class ZhiHuUserSpider(threading.Thread):
 	'''
     def save_info_to_mongo(self, url_token):
         url = 'https://www.zhihu.com/api/v4/members/' + url_token + '?include=' \
-                                                                    'locations%2Cemployments%2Cgender%2Ceducations%2Cbusiness%2C' \
-                                                                    'voteup_count%2Cthanked_Count%2Cfollower_count%2Cfollowing_count%2C' \
-                                                                    'cover_url%2Cfollowing_topic_count%2Cfollowing_question_count%2C' \
-                                                                    'following_favlists_count%2Cfollowing_columns_count%2Cavatar_hue%2C' \
-                                                                    'answer_count%2Carticles_count%2Cpins_count%2Cquestion_count%2C' \
-                                                                    'columns_count%2Ccommercial_question_count%2Cfavorite_count%2C' \
-                                                                    'favorited_count%2Clogs_count%2Cmarked_answers_count%2C' \
-                                                                    'marked_answers_text%2Cmessage_thread_token%2Caccount_status%2C' \
-                                                                    'is_active%2Cis_bind_phone%2Cis_force_renamed%2Cis_bind_sina%2C' \
-                                                                    'is_privacy_protected%2Csina_weibo_url%2Csina_weibo_name%2C' \
-                                                                    'show_sina_weibo%2Cis_blocking%2Cis_blocked%2Cis_following%2C' \
-                                                                    'is_followed%2Cis_org_createpin_white_user%2Cmutual_followees_count%2C' \
-                                                                    'vote_to_count%2Cvote_from_count%2Cthank_to_count%2Cthank_from_count%2C' \
-                                                                    'thanked_count%2Cdescription%2Chosted_live_count%2Cparticipated_live_count%2C' \
-                                                                    'allow_message%2Cindustry_category%2Corg_name%2Corg_homepage%2C' \
-                                                                    'badge%5B%3F(type%3Dbest_answerer)%5D.topics'
-        text = self.__session.get(url).text
-        res = json.loads(text)
+              'locations%2Cemployments%2Cgender%2Ceducations%2Cbusiness%2C' \
+              'voteup_count%2Cthanked_Count%2Cfollower_count%2Cfollowing_count%2C' \
+              'cover_url%2Cfollowing_topic_count%2Cfollowing_question_count%2C' \
+              'following_favlists_count%2Cfollowing_columns_count%2Cavatar_hue%2C' \
+              'answer_count%2Carticles_count%2Cpins_count%2Cquestion_count%2C' \
+              'columns_count%2Ccommercial_question_count%2Cfavorite_count%2C' \
+              'favorited_count%2Clogs_count%2Cmarked_answers_count%2C' \
+              'marked_answers_text%2Cmessage_thread_token%2Caccount_status%2C' \
+              'is_active%2Cis_bind_phone%2Cis_force_renamed%2Cis_bind_sina%2C' \
+              'is_privacy_protected%2Csina_weibo_url%2Csina_weibo_name%2C' \
+              'show_sina_weibo%2Cis_blocking%2Cis_blocked%2Cis_following%2C' \
+              'is_followed%2Cis_org_createpin_white_user%2Cmutual_followees_count%2C' \
+              'vote_to_count%2Cvote_from_count%2Cthank_to_count%2Cthank_from_count%2C' \
+              'thanked_count%2Cdescription%2Chosted_live_count%2Cparticipated_live_count%2C' \
+              'allow_message%2Cindustry_category%2Corg_name%2Corg_homepage%2C' \
+              'badge%5B%3F(type%3Dbest_answerer)%5D.topics'
+        try:
+            text = self.__session.get(url).text
+            res = json.loads(text)
+        except requests.exceptions.ConnectionError as e:
+            print('#' + self.__id)
+            print(e.args)
+            self.update_proxy()
+            self.update_ua()
+            # 不太好应该设定一个尝试的最大次数，死循环？？
+            self.save_info_to_mongo(url_token)
+        except json.decoder.JSONDecodeError as e:
+            print('#' + self.__id)
+            print(e.args)
+            print(url_token + '保存失败！')
+            return
         # print(text)
         self.mongo_handler.save_info(**res)
         print('#' + self.__id + url_token + '用户已经信息保存进mongo')
@@ -170,12 +183,15 @@ class ZhiHuUserSpider(threading.Thread):
 
 if __name__ == '__main__':
     threads = []
-    for i in range(4):
+    n = 3
+    for i in range(n):
         t = ZhiHuUserSpider(i)
         threads.append(t)
-    for i in range(4):
+    for i in range(n):
         threads[i].start()
-    for i in range(4):
-        threads[i].join()
+    # for i in range(n):
+    #     # join将主线程阻塞在这里
+    #     # 默认情况下主线程会等待子线程的结束
+    #     threads[i].join()
 
 
