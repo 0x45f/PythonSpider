@@ -21,9 +21,8 @@ class MongoHandler:
         self.__collection = client.get_database(database).get_collection(collection)
 
     # 将用户信息存入mongo
-    def save_info(self, **info):
+    def save_info(self, info):
         self.__collection.save(info)
-
 
 if __name__ == '__main__':
     handler = MongoHandler()

@@ -37,7 +37,7 @@ class RedisHandler:
             self.__redis_con.hset(self.__hash_name, url_token, 1)
             self.__redis_con.rpush(self.__list_name, url_token)
 
-    # 从redis的list头部返回一个没有爬取的url,blpop：如果list为空则阻塞
+    # 从redis的list头部返回一个没有爬取的url,blpop：如果list为空则阻塞,但是会返回一个二元的元组（name, value）
     def get_url_token(self):
         return self.__redis_con.lpop(self.__list_name)
 
