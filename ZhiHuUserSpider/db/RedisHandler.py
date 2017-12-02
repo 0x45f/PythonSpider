@@ -12,7 +12,7 @@ class RedisHandler:
     # 连接redis数据库
     def __con_redis(self):
         config = configparser.ConfigParser()
-        config.read('./db/config.ini')
+        config.read('../file/config.ini')
         host = config["redis"]['host']
         port = config['redis']['port']
         password = config['redis']['password']

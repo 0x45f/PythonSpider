@@ -10,7 +10,7 @@ class MongoHandler:
     # 连接mongo
     def __con_mongo(self):
         config = configparser.ConfigParser()
-        config.read('./db/config.ini')
+        config.read('../file/config.ini')
         host = config['mongo']['host']
         port = int(config['mongo']['port'])
         username = config['mongo']['username']

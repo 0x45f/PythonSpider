@@ -42,7 +42,7 @@ headers = {
 
 # 使用登录cookie信息
 session = requests.session()
-session.cookies = cookielib.LWPCookieJar(filename='cookies')
+session.cookies = cookielib.LWPCookieJar(filename='../file/cookies')
 try:
     session.cookies.load(ignore_discard=True)
     # print(session.cookies)
